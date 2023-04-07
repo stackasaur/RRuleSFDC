@@ -409,7 +409,7 @@ public class RRule {
         Pattern header_pattern = Pattern.compile('^([A-Z]+?)[:;]');
         Matcher m = header_pattern.matcher(rfcString.toUpperCase());
 
-        if (!m.matches()){
+        if (!m.find()){
             return parseRRule(rfcString);
         }
 
@@ -428,6 +428,7 @@ public class RRule {
     }
     @testVisible
     private static Options parseRRule(String line){
+        System.debug(line);
         Options ret = new Options();
         String stripped_line = line.replaceAll('^RRULE:', '');
         ret.mergeOptions(parseDtstart(stripped_line));
@@ -498,12 +499,13 @@ public class RRule {
     }
     @testVisible
     private static Options parseDtStart(String line){
+        System.debug(line);
         Options ret = new Options();
 
         Pattern p = Pattern.compile('DTSTART(?:;TZID=([^:=]+?))?(?::|=)([^;\\s]+)');
         Matcher m = p.matcher(line);
 
-        if (!m.matches()) return ret;
+        if (!m.find()) return ret;
 
         String tz = m.group(1);
         String dt = m.group(2);
@@ -520,17 +522,18 @@ public class RRule {
         Pattern p = Pattern.compile('^(\\d{4})(\\d{2})(\\d{2})(T(\\d{2})(\\d{2})(\\d{2})Z?)?$');
         Matcher m = p.matcher(dt);
 
-        if (!m.matches()) throw new RRuleException('Invalid datetime in rrule');
+        if (!m.find()) throw new RRuleException('Invalid datetime in rrule');
 
         return DateTime.newInstanceGmt(
-            Integer.valueOf(m.group(0)), 
             Integer.valueOf(m.group(1)), 
             Integer.valueOf(m.group(2)), 
-            Integer.valueOf(m.group(3)),
-            Integer.valueOf(m.group(4)),
-            Integer.valueOf(m.group(5))
+            Integer.valueOf(m.group(3)), 
+            Integer.valueOf(m.group(5)),
+            Integer.valueOf(m.group(6)),
+            Integer.valueOf(m.group(7))
         );
     }
+
     public class Options{
         public String tzid;
         public DateTime dtstart;
@@ -538,7 +541,7 @@ public class RRule {
         public Integer count;
         public Integer interval;
         public Frequency freq;
-        public Week wkst = Week.SUN;
+        public Week wkst;
         public Set<Week> byday;
         public Set<Month> bymonth;
 

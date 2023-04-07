@@ -126,4 +126,87 @@ public class RRuleTest {
         Assert.isNull(RRule.getMonthEnum(null));
         Assert.isNull(RRule.getMonthEnum(0));
     }
+
+    static testmethod void testParseDate(){
+        Datetime now = Datetime.now();
+        String dt = now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
+        Datetime parsed = RRule.parseDate(dt);
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - parsed.getTime());
+    } 
+    static testmethod void testParseDtStart(){
+        Datetime now = Datetime.now();
+        String dt = now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
+
+        String input = 'DTSTART:'+dt;
+        RRule.Options options = RRule.parseDtStart(input);
+        Assert.isNull(options.tzid);
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options.dtstart.getTime());
+
+
+        String input_tz = 'DTSTART;TZID=America/New_York:'+dt;
+        RRule.Options options_tz = RRule.parseDtStart(input_tz);
+        Assert.areEqual('America/New_York',options_tz.tzid);
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options_tz.dtstart.getTime());
+    } 
+    static testmethod void testParseRRule(){
+        Datetime now = Datetime.now();
+        String dt = now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
+
+        String input = 'RRULE:FREQ=DAILY;COUNT=2;INTERVAL=1;WKST=MO;BYDAY=MO,TU,WE;BYMONTH=1,2,3;UNTIL='+dt;
+        RRule.Options options = RRule.parseRRule(input);
+        Assert.areEqual(RRule.Frequency.DAILY,options.freq);
+        Assert.areEqual(2,options.count);
+        Assert.areEqual(1,options.interval);
+        Assert.areEqual(RRule.Week.MON,options.wkst);
+        Assert.isTrue(options.byday.containsAll(new List<RRule.Week>{RRule.Week.MON,RRule.Week.TUE,RRule.Week.WED}));
+        Assert.isTrue(options.bymonth.containsAll(new List<RRule.Month>{RRule.Month.JAN,RRule.Month.FEB,RRule.Month.MAR}));
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options.until.getTime());
+
+        String input_dt = 'RRULE:FREQ=WEEKLY;COUNT=30;DTSTART='+dt;
+
+        RRule.Options options_dt = RRule.parseRRule(input_dt);
+        Assert.areEqual(30,options_dt.count);
+        Assert.areEqual(RRule.Frequency.WEEKLY,options_dt.freq);
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options_dt.dtstart.getTime());
+
+        // TEST ERR
+        try{
+            String input_bad = 'FOO=BAR';
+            RRule.Options options_bad = RRule.parseRRule(input_bad);
+
+            Assert.fail();
+        }
+        catch(RRule.RRuleException e){
+            Assert.isTrue(true);
+        }
+        
+    } 
+
+    static testmethod void testOptions(){
+        RRule.Options opts = new RRule.Options();
+        Datetime now = Datetime.now();
+        opts.dtstart = now;
+        opts.until = now.addDays(1);
+        opts.freq = RRule.Frequency.MONTHLY;
+        opts.tzid = 'America/New_York';
+        opts.wkst = RRule.Week.MON;
+        opts.byday = new Set<RRule.Week>{RRule.Week.MON};
+        opts.bymonth = new Set<RRule.Month>{RRule.Month.JAN};
+        opts.count = 1;
+        opts.interval = 1;
+
+        // no assertion needed
+    }
+    static testmethod void testOptionsMerge(){
+        Datetime now = Datetime.now();
+
+        RRule.Options opts = new RRule.Options();
+
+        RRule.Options opts2 = new RRule.Options();
+        opts2.dtstart = now;
+
+        opts.mergeOptions(opts2);
+
+        Assert.areEqual(now,opts.dtstart);
+    }
 }
