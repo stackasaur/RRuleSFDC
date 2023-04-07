@@ -182,6 +182,58 @@ public class RRuleTest {
         
     } 
 
+    static testmethod void testFromString(){
+        Datetime now = Datetime.now();
+        String dt = now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
+        String rfcString = 'DTSTART:'+dt+'\nRRULE:FREQ=WEEKLY;COUNT=30;';
+
+        RRule rule = RRule.fromString(rfcString);
+        RRule.Options options = rule.options;
+
+        Assert.areEqual(RRule.Frequency.WEEKLY,options.freq);
+        Assert.areEqual(30,options.count);
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options.dtstart.getTime());
+    }
+
+    static testmethod void testParseLine_RRule(){
+        String line = 'RRULE:FREQ=WEEKLY;COUNT=30;';
+        RRule.Options options = RRule.parseLine(line);
+
+        Assert.areEqual(RRule.Frequency.WEEKLY,options.freq);
+        Assert.areEqual(30,options.count);
+    }
+    static testmethod void testParseLine_DtStart(){
+        Datetime now = Datetime.now();
+        String dt = now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
+
+        String line = 'DTSTART:'+dt;
+        RRule.Options options = RRule.parseLine(line);
+
+        Assert.areEqual(0,now.getTime() - now.millisecondGmt() - options.dtstart.getTime());
+    }
+    static testmethod void testParseLine_NoHead(){
+        String line = 'FREQ=WEEKLY;COUNT=30;';
+        RRule.Options options = RRule.parseLine(line);
+
+        Assert.areEqual(RRule.Frequency.WEEKLY,options.freq);
+        Assert.areEqual(30,options.count);
+    }
+    static testmethod void testParseLine_Blank(){
+        String line = '   ';
+        RRule.Options options = RRule.parseLine(line);
+
+        Assert.isNull(options);
+    }
+    static testmethod void testParseLine_Bad(){
+        String line = 'FOO:BAR';
+        try{
+            RRule.Options options = RRule.parseLine(line);
+            Assert.fail();
+        }catch(RRule.RRuleException e){
+            Assert.isTrue(true);
+        }
+    }
+
     static testmethod void testOptions(){
         RRule.Options opts = new RRule.Options();
         Datetime now = Datetime.now();

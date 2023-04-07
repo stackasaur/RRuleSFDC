@@ -383,14 +383,14 @@ public class RRule {
         RRule ret;
         Options opts;
         if (rfcString.length()>0){
-            String[] lines = rfcString.split('\\n');
+            String[] lines = rfcString.split('\\r\\n');
             if (lines.size() == 1)
-                lines = rfcString.split('\\r\\n');
+                lines = rfcString.split('\\n');
 
-                opts = new Options();
-                for (String line : lines){
-                    opts.mergeOptions(parseLine(line));
-                }
+            opts = new Options();
+            for (String line : lines){
+                opts.mergeOptions(parseLine(line));
+            }
             if (opts != null){
                 ret = new RRule(opts);
             }
