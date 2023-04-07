@@ -6,6 +6,7 @@ public class RRule {
     public virtual class RRuleException extends Exception {}
 
     // Convert between rrule values and enum values
+    @testVisible
     private static String getFrequencyString(Frequency f){
         switch on f{
             when YEARLY{
@@ -32,7 +33,9 @@ public class RRule {
         }
         return null;
     }
+    @testVisible
     private static Frequency getFrequencyEnum(String f){
+        if (f==null) return null;
         switch on f.toUpperCase(){
             when 'YEARLY'{
                 return Frequency.YEARLY;
@@ -58,7 +61,7 @@ public class RRule {
         }
         return null;
     }
-
+    @testVisible
     private static String getWeekString(Week w){
         switch on w{
             when MON{
@@ -85,7 +88,9 @@ public class RRule {
         }
         return null;
     }
+    @testVisible
     private static Week getWeekEnum(String w){
+        if (w==null) return null;
         switch on w.toUpperCase(){
             when 'MO'{
                 return Week.MON;
@@ -111,7 +116,7 @@ public class RRule {
         }
         return null;
     }
-
+    @testVisible
     private static Integer getMonthInteger(Month m){
         switch on m{
             when JAN{
@@ -153,7 +158,9 @@ public class RRule {
         }
         return null;
     }
+    @testVisible
     private static Month getMonthEnum(Integer m){
+        if (m==null) return null;
         switch on m{
             when 1{
                 return Month.JAN;
@@ -303,6 +310,7 @@ public class RRule {
         this.options = new Options();
     }
 
+    @testVisible
     private RRule(Options opts) {
         this.options = opts;
     }
@@ -389,7 +397,7 @@ public class RRule {
         }
         return ret;
     }
-
+    @testVisible
     private static Options parseLine(String rfcString){
         Options ret;
 
@@ -418,6 +426,7 @@ public class RRule {
             }
         }
     }
+    @testVisible
     private static Options parseRRule(String line){
         Options ret = new Options();
         String stripped_line = line.replaceAll('^RRULE:', '');
@@ -487,6 +496,7 @@ public class RRule {
         }
         return ret;
     }
+    @testVisible
     private static Options parseDtStart(String line){
         Options ret = new Options();
 
@@ -505,6 +515,7 @@ public class RRule {
         ret.dtstart = parseDate(dt);
         return ret;
     }
+    @testVisible
     private static DateTime parseDate(String dt){
         Pattern p = Pattern.compile('^(\\d{4})(\\d{2})(\\d{2})(T(\\d{2})(\\d{2})(\\d{2})Z?)?$');
         Matcher m = p.matcher(dt);
